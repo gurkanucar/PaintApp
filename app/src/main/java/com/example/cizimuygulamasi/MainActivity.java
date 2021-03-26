@@ -1,8 +1,12 @@
 package com.example.cizimuygulamasi;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.ContentValues;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -12,10 +16,15 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.slider.RangeSlider;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 import petrov.kristiyan.colorpicker.ColorPicker;
@@ -23,9 +32,9 @@ import petrov.kristiyan.colorpicker.ColorPicker;
 
 public class MainActivity extends AppCompatActivity {
     private MyCanvas canvas;
-    private  float size;
-    private  int brushColor;
-    private  int backgroundColor;
+    private float size;
+    private int brushColor= Color.RED;
+    private int backgroundColor=Color.WHITE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 canvas.setSize(size);
                 canvas.setColor(brushColor);
                 canvas.setBg(backgroundColor);
+                canvas.invalidate();
             }
         });
 
@@ -114,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         save.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.Q)
             @Override
             public void onClick(View v) {
                 Bitmap bmp = canvas.getBitmap();
@@ -122,21 +133,32 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.Q)
     private void save(Bitmap bitmap) {
-        OutputStream imageOutStream = null;
-        ContentValues cv = new ContentValues();
-        cv.put(MediaStore.Images.Media.DISPLAY_NAME, "drawing.png");
-        cv.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-        cv.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
-        Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);
+        requestPermissionForReadExtertalStorage();
         try {
-            imageOutStream = getContentResolver().openOutputStream(uri);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, imageOutStream);
-            imageOutStream.close();
-            Toast.makeText(MainActivity.this, "Kaydedildi", Toast.LENGTH_LONG).show();
+            String path = Environment.getExternalStorageDirectory().toString();
+            OutputStream fOut = null;
+            File file = new File(path, "image.jpeg");
+            fOut = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
+            fOut.flush();
+            fOut.close();
+            MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
+            Toast.makeText(MainActivity.this, "Saved", Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    public void requestPermissionForReadExtertalStorage() {
+        try {
+            ActivityCompat.requestPermissions((Activity) MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    101);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
