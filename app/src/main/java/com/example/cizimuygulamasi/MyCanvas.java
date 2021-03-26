@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MyCanvas extends View {
 
@@ -33,6 +34,10 @@ public class MyCanvas extends View {
 
     public void setBg(int bg) {
         this.backGroundColor = bg;
+    }
+
+    public List<Stroke> getPaths(){
+        return paths;
     }
 
     public MyCanvas(Context context) {

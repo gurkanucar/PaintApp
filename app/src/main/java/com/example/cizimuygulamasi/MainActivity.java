@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
         Button colorPick = findViewById(R.id.changeColor);
         Button bgColor = findViewById(R.id.changeBackgorund);
         Button save = findViewById(R.id.save);
+        Button undo = findViewById(R.id.undo);
 
         RangeSlider rangeSlider = (RangeSlider) findViewById(R.id.rangebar);
         rangeSlider.setValueFrom(0.0f);
@@ -77,6 +78,16 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        undo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(canvas.getPaths().size()>0){
+                    canvas.getPaths().remove(canvas.getPaths().size()-1);
+                    canvas.invalidate();
+                }
+            }
+        });
+
         colorPick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -98,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
                         .show();
             }
         });
-
 
         bgColor.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,9 +149,9 @@ public class MainActivity extends AppCompatActivity {
         try {
             String path = Environment.getExternalStorageDirectory().toString();
             OutputStream fOut = null;
-            File file = new File(path, "image.jpeg");
+            File file = new File(path, "image.png");
             fOut = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
             fOut.flush();
             fOut.close();
             MediaStore.Images.Media.insertImage(getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
